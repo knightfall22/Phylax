@@ -1,0 +1,35 @@
+tick_rate: "1s"
+sensor_count: 100
+
+# Chaos Parameters
+temp_fluctuation: 0.1
+packet_loss_rate: 0.00
+battery_drain: 0.0001
+fire_probability: 0.00
+spike_rate: 0.00
+disaster_zone: "None"
+
+zones:
+  - name: "server_room"
+    percent: 0.05 # 5% of sensors (e.g., 50 sensors)
+    base_temp: 18.0
+    base_hum: 30.0
+
+  - name: "kitchen"
+    percent: 0.10 # 10% of sensors (e.g., 100 sensors)
+    base_temp: 26.0
+    base_hum: 65.0
+
+# Any remaining sensors (85%) automatically become "default/office"
+default_zone:
+  name: "office"
+  base_temp: 21.5
+  base_hum: 45.0
+
+# NATS Configuration
+tls_enabled: true
+client_cert: "/home/viktor/.phylax/client.pem"
+client_key: "/home/viktor/.phylax/client-key.pem"
+root_ca: "/home/viktor/.phylax/ca.pem"
+
+nats_url: "https://localhost:4322/"
