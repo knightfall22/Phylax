@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/knightfall22/Phylax/publisher"
-	"github.com/knightfall22/Phylax/simulation/config"
+	"github.com/knightfall22/Phylax/simulator/config"
 )
 
 // Sensor reading to be sent to NATS
@@ -178,7 +178,7 @@ func StartSimulator(
 	ctx context.Context,
 	sensor *SensorState,
 	cfg *config.SimulationConfig,
-	publisher publisher.Publisher,
+	publisher *publisher.NatsPublisher,
 	onError func(err error),
 	wg *sync.WaitGroup,
 ) {
@@ -206,7 +206,7 @@ func StartSimulator(
 				if err != nil {
 					onError(err)
 				}
-				err = publisher.Publish(topic, byt)
+				err = publisher.Publish(ctx, topic, byt)
 				if err != nil {
 					onError(err)
 				}

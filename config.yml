@@ -1,0 +1,7 @@
+# NATS Configuration
+tls_enabled: true
+client_cert: "/home/viktor/.phylax/client.pem"
+client_key: "/home/viktor/.phylax/client-key.pem"
+root_ca: "/home/viktor/.phylax/ca.pem"
+
+nats_url: "https://localhost:4322/"

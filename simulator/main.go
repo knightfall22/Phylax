@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/knightfall22/Phylax/publisher"
-	"github.com/knightfall22/Phylax/simulation/config"
+	"github.com/knightfall22/Phylax/simulator/config"
 )
 
 // Simulator for air quality monitoring sensors.
@@ -17,9 +17,16 @@ import (
 // Each sensor has a unique ID. And it's data is published to a NATS topic.
 // Sensor monitors CO, temperature, humidity, and it's battery level.
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
 	cfg := config.LoadConguration()
 	sensorsCounts := cfg.Config.SensorCount
-	natsConn, err := publisher.NATSConnect(&cfg.Config)
+	natsConn, err := publisher.NATSConnect(ctx, publisher.NATSConnectionOptions{
+		TLSEnabled: cfg.Config.TLSEnabled,
+		ClientCert: cfg.Config.ClientCert,
+		ClientKey:  cfg.Config.ClientKey,
+		RootCA:     cfg.Config.RootCA,
+		URL:        cfg.Config.NATSURL,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +35,6 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(sensorsCounts)
-	ctx, cancel := context.WithCancel(context.Background())
 
 	// Use atomic.Uint64 for thread-safe counting without locks
 	var errorCount atomic.Uint64
@@ -92,7 +98,7 @@ func spawnSensorReaders(
 	cfg *config.SimulationConfig,
 	zone config.ZoneConfig,
 	onError func(err error),
-	publisher publisher.Publisher,
+	publisher *publisher.NatsPublisher,
 	wg *sync.WaitGroup,
 ) {
 	id := fmt.Sprintf("sensor-%d", index)
