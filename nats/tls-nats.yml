@@ -1,0 +1,15 @@
+# Set up nats server with TLS and JetStream
+services:
+  nats-tls:
+    image: nats
+    ports:
+      - "4322:4222"
+    volumes:
+      - /home/viktor/.phylax:/etc/nats/certs
+    command: >
+      -js 
+      --tls
+      --tlscert=/etc/nats/certs/server.pem 
+      --tlskey=/etc/nats/certs/server-key.pem 
+      --tlscacert=/etc/nats/certs/ca.pem 
+      --tlsverify
