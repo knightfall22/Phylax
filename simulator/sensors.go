@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -10,8 +9,10 @@ import (
 	"sync"
 	"time"
 
+	pb "github.com/knightfall22/Phylax/api/v1"
 	"github.com/knightfall22/Phylax/publisher"
 	"github.com/knightfall22/Phylax/simulator/config"
+	"google.golang.org/protobuf/proto"
 )
 
 // Sensor reading to be sent to NATS
@@ -82,7 +83,7 @@ func NewSensor(opts SensorOptions) *SensorState {
 }
 
 // Advances the physics value by one step in time using Markov Chain
-func (s *SensorState) Tick() *SensorReading {
+func (s *SensorState) Tick() *pb.SensorReading {
 	// Determine if the global disaster settings apply to THIS sensor.
 	// Matches if config says "All" OR if config matches my specific ZoneID.
 	// If DisasterZone is "None", this is always false.
@@ -159,13 +160,13 @@ func (s *SensorState) Tick() *SensorReading {
 	}
 
 	// Return the View (DTO)
-	return &SensorReading{
-		SensorID:     s.ID,
+	return &pb.SensorReading{
+		SensorId:     s.ID,
 		SensorZone:   s.ZoneID,
 		Timestamp:    time.Now().UTC().UnixMilli(),
 		Temperature:  round(s.Temperature),
 		Humidity:     round(s.Humidity),
-		CO:           round(s.CO),
+		CoLevel:      round(s.CO),
 		BatteryLevel: round(s.BatteryLevel),
 	}
 }
@@ -202,7 +203,7 @@ func StartSimulator(
 			data := sensor.Tick()
 
 			if data != nil {
-				byt, err := json.Marshal(data)
+				byt, err := proto.Marshal(data)
 				if err != nil {
 					onError(err)
 				}
@@ -210,7 +211,6 @@ func StartSimulator(
 				if err != nil {
 					onError(err)
 				}
-				data.logReading()
 
 			}
 		}

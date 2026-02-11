@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package phylax.v1;
+
+option go_package = "github.com/knightfall22/Phylax/api/v1;v1";
+
+message SensorReading {
+  string sensor_id = 1;
+  string sensor_zone = 2;
+  int64 timestamp = 3;
+  double temperature = 4;
+  double humidity = 5;
+  double co_level = 6;
+  double battery_level = 7;
+}
