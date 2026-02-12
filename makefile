@@ -36,3 +36,15 @@ compile:
 		--go_opt=paths=source_relative \
 		--go-grpc_opt=paths=source_relative \
 		--proto_path=.
+
+up:
+	goose -dir ./db/migration up
+
+down:
+	goose -dir ./db/migration down
+
+db:
+	goose -dir ./db/migration status
+
+migration:
+	goose -dir db/migration create $(name) sql 

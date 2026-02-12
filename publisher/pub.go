@@ -82,6 +82,11 @@ func (p *NatsPublisher) Publish(ctx context.Context, subject string, payload []b
 	return err
 }
 
+func (p *NatsPublisher) PublishAsync(subject string, payload []byte) error {
+	_, err := p.js.PublishAsync(subject, payload)
+	return err
+}
+
 func (p *NatsPublisher) Consume(ctx context.Context, handler func(jetstream.Msg)) (jetstream.ConsumeContext, error) {
 	config := jetstream.ConsumerConfig{
 		Name:          "PROCESSOR_WORKERS",
@@ -89,6 +94,9 @@ func (p *NatsPublisher) Consume(ctx context.Context, handler func(jetstream.Msg)
 		AckPolicy:     jetstream.AckExplicitPolicy,
 		FilterSubject: "sensors.>",
 		AckWait:       30 * time.Second,
+		// MaxAckPending: (WorkerCount * BatchSize) * 2
+		// 16 * 1000 * 2 = 32000
+		MaxAckPending: 32000,
 	}
 
 	consumer, err := p.js.CreateOrUpdateConsumer(ctx, "SENSORS_READINGS", config)

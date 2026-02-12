@@ -1,10 +1,10 @@
 tick_rate: "1s"
-sensor_count: 100
+sensor_count: 10000
 
 # Chaos Parameters
 temp_fluctuation: 0.1
 packet_loss_rate: 0.00
-battery_drain: 0.0001
+battery_drain: 0.01
 fire_probability: 0.00
 spike_rate: 0.00
 disaster_zone: "None"

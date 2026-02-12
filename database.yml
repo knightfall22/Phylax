@@ -1,0 +1,22 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: phylax-db
+spec:
+  instances: 3
+
+  # Storage Configuration
+  storage:
+    size: 10Gi
+
+  # Database Configuration Tuning (Senior Level)
+  postgresql:
+    parameters:
+      max_connections: "500" # Allow enough connections for your workers
+      shared_buffers: "256MB" # Cache memory (Adjust based on Node RAM)
+      work_mem: "8MB" # Memory per query
+
+  bootstrap:
+    initdb:
+      database: sensors
+      owner: phylax_user
