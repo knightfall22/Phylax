@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-processor
+  labels:
+    app: phylax
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: phylax
+  template:
+    metadata:
+      labels:
+        app: phylax
+    spec:
+      containers:
+        - name: processor
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 2112 # Metrics port
+          env:
+            - name: NATS_URL
+              value: {{ .Values.env.NATS_URL }}
+            - name: DB_HOST
+              value: {{ .Values.env.DB_HOST }}
+            - name: DB_USER
+              value: {{ .Values.env.DB_USER }}
+            - name: DB_NAME
+              value: {{ .Values.env.DB_NAME }}
+            - name: DB_PORT
+              value: {{ .Values.env.DB_PORT | quote }}
+            - name: TLSEnabled
+              value: "false" 
+            - name: ClientCert
+              value: ""
+            - name: ClientKey
+              value: ""
+            - name: RootCA
+              value: ""
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.env.DB_SECRET_NAME }}
+                  key: password

@@ -1,6 +1,0 @@
-prometheus:
-  prometheusSpec:
-    additionalScrapeConfigs:
-      - job_name: "phylax-local-app"
-        static_configs:
-          - targets: ["172.27.13.37:2112"]

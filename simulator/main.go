@@ -20,6 +20,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	cfg := config.LoadConguration()
 	sensorsCounts := cfg.Config.SensorCount
+
+	fmt.Println(cfg.Config.NATSURL)
+
 	natsConn, err := publisher.NATSConnect(ctx, publisher.NATSConnectionOptions{
 		TLSEnabled: cfg.Config.TLSEnabled,
 		ClientCert: cfg.Config.ClientCert,

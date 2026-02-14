@@ -27,9 +27,9 @@ default_zone:
   base_hum: 45.0
 
 # NATS Configuration
-tls_enabled: true
+tls_enabled: false
 client_cert: "/home/viktor/.phylax/client.pem"
 client_key: "/home/viktor/.phylax/client-key.pem"
 root_ca: "/home/viktor/.phylax/ca.pem"
 
-nats_url: "https://localhost:4322/"
+nats_url: "http://localhost:4322"

@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"embed"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,8 +12,15 @@ import (
 	"github.com/knightfall22/Phylax/internals/processor"
 	"github.com/knightfall22/Phylax/publisher"
 	"github.com/nats-io/nats.go/jetstream"
+	"github.com/pressly/goose/v3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/knightfall22/Phylax/internals/metrics"
 )
+
+//go:embed db/migration/*.sql
+var embedMigrations embed.FS
 
 type App struct {
 	Processor   *processor.Processor
@@ -19,7 +29,27 @@ type App struct {
 }
 
 func Run(ctx context.Context, conf *config.Config) *App {
-	processor := processor.NewProcessor(ctx)
+
+	connectionStream := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		conf.DBUser, conf.DBPassword, conf.DBHost, conf.DBPort, conf.DBName)
+
+	db, err := sql.Open("pgx", connectionStream)
+	if err != nil {
+		log.Fatalf("Failed to open DB for migrations: %v", err)
+	}
+	defer db.Close()
+
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatalf("Failed to set goose dialect: %v", err)
+	}
+
+	if err := goose.Up(db, "db/migration"); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	processor := processor.NewProcessor(ctx, connectionStream)
 	processor.Start(ctx)
 
 	nc, err := publisher.NATSConnect(ctx, publisher.NATSConnectionOptions{

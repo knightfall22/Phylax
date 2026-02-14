@@ -34,8 +34,8 @@ func NATSConnect(ctx context.Context, cfg NATSConnectionOptions) (*NatsPublisher
 			CertFile: cfg.ClientCert,
 			KeyFile:  cfg.ClientKey,
 			CAFile:   cfg.RootCA,
-			//Todo: add proper server address
-			ServerAddress: "127.0.0.1",
+			// //Todo: add proper server address
+			// ServerAddress: "127.0.0.1",
 		})
 		if err != nil {
 			return nil, err
@@ -78,6 +78,8 @@ func (p *NatsPublisher) Close() {
 }
 
 func (p *NatsPublisher) Publish(ctx context.Context, subject string, payload []byte) error {
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
 	_, err := p.js.Publish(ctx, subject, payload)
 	return err
 }
@@ -106,8 +108,6 @@ func (p *NatsPublisher) Consume(ctx context.Context, handler func(jetstream.Msg)
 
 	consumerCxt, err := consumer.Consume(func(msg jetstream.Msg) {
 		handler(msg)
-
-		msg.Ack()
 	})
 
 	return consumerCxt, err

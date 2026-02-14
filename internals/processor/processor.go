@@ -16,21 +16,11 @@ import (
 )
 
 const (
-	_ int32 = 1 << iota
-	EngineStatus_WAITING
-	EngineStatus_BUSY
-	EngineStatus_SHUTTING_DOWN
-	EngineStatus_TRANSACTION
-)
-
-var eStatus = EngineStatus_WAITING
-
-const (
 	BatchSize    = 1500
 	FlusInterval = 1
 )
 
-var WorkerCount = runtime.NumCPU()
+var workerCount = runtime.NumCPU()
 
 type batchItem struct {
 	data *pb.SensorReading
@@ -41,33 +31,26 @@ type Processor struct {
 	dbPool *pgxpool.Pool
 }
 
-func NewProcessor(ctx context.Context) *Processor {
-	dbstring := fmt.Sprintf("postgres://%s:%s@%s:5432/%s",
-		"phylax_user",
-		"VXL4irUW6ChaGwsKbZ2pIwnWUUOfpmrrBlgWb5gMLGeBevb5gqUft6n1eL9k46rM",
-		"localhost",
-		"sensors",
-	)
-
+func NewProcessor(ctx context.Context, dbstring string) *Processor {
 	config, err := pgxpool.ParseConfig(dbstring)
 	if err != nil {
 		log.Fatal("Unable to parse DB config:", err)
 	}
 
-	config.MaxConns = int32(WorkerCount)
+	config.MaxConns = int32(workerCount)
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		log.Fatal("Unable to connect to DB:", err)
 	}
 	return &Processor{
-		input:  make(chan jetstream.Msg, 5000),
+		input:  make(chan jetstream.Msg, 50000),
 		dbPool: pool,
 	}
 }
 
 func (p *Processor) Start(ctx context.Context) {
-	for i := range WorkerCount {
+	for i := range workerCount {
 		go p.workerLoop(ctx, i)
 	}
 }
@@ -144,6 +127,7 @@ func (p *Processor) workerLoop(ctx context.Context, i int) {
 				//Reset batch buffer
 				timeSince = time.Now()
 				batch = batch[:0]
+				ticker.Reset(FlusInterval * time.Second)
 			}
 
 		case <-ticker.C:

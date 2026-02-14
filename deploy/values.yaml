@@ -1,0 +1,28 @@
+replicaCount: 3
+
+image:
+  repository: phylax
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+# Application Config
+env:
+  NATS_URL: "nats://phylax-nats:4222"
+  DB_HOST: "phylax-db-rw"
+  DB_USER: "phylax_user"
+  DB_NAME: "sensors"
+  DB_PORT: "5432"
+  DB_SECRET_NAME: "phylax-db-app"
+
+# Dependency Configuration
+nats:
+  enabled: true
+  config:
+    jetstream:
+      enabled: true
+      memory_store_max_size: 1Gi
+
+monitoring:
+  enabled: true
+  grafana:
+    adminPassword: "admin" # Simple password for demo
