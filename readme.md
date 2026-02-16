@@ -103,6 +103,8 @@ Import preconfigured dashboard from the json file in the dashboard folder
 
 ## Dashboard
 
+![Dashboard](assets/dash.gif)
+
 ### Normal scenario
 
 ![Normal Scenario](assets/regular.png)
