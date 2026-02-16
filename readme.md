@@ -10,3 +10,5 @@ Phylax is a high-velocity IoT monitoring platform designed to ingest, process, a
 - CloudNativePG: Production-grade PostgreSQL automation on K8s.
 
 ## Architecture
+
+![System Architecture](assets/architecture.png)
