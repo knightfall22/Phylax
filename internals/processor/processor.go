@@ -19,12 +19,17 @@ const (
 	FlusInterval = 1
 )
 
+// Number of workers.
+// This I find to be the optimal value as is prevents potential data fragmentation.
 var workerCount = 4
 
 type batchItem struct {
 	data *pb.SensorReading
 	msg  jetstream.Msg
 }
+
+// Serves as a buffer between NATS and DB
+// Retrieves messages from NATS and flushes them to DB
 type Processor struct {
 	input  chan jetstream.Msg
 	dbPool *pgxpool.Pool
