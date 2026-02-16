@@ -96,3 +96,17 @@ go run cmd/simulator/main.go
 # (Note: Adjust the service name if yours differs, check with 'kubectl get svc')
 kubectl port-forward svc/phylax-kube-prometheus-stack-grafana 8080:80
 ```
+
+Import preconfigured dashboard from the json file in the dashboard folder
+
+**Password:** prom-operator
+
+## Dashboard
+
+### Normal scenario
+
+![Normal Scenario](assets/regular.png)
+
+### Disaster scenario
+
+![Disaster Scenario](assets/disaster.png)
