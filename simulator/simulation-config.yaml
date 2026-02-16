@@ -1,5 +1,5 @@
 tick_rate: "1s"
-sensor_count: 10000
+sensor_count: 5000
 
 # Chaos Parameters
 temp_fluctuation: 0.1

@@ -2,7 +2,7 @@ replicaCount: 3
 
 image:
   repository: phylax
-  pullPolicy: IfNotPresent
+  pullPolicy: Never
   tag: "latest"
 
 # Application Config

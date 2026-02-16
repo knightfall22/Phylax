@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"runtime"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -20,7 +19,7 @@ const (
 	FlusInterval = 1
 )
 
-var workerCount = runtime.NumCPU()
+var workerCount = 4
 
 type batchItem struct {
 	data *pb.SensorReading
@@ -44,7 +43,7 @@ func NewProcessor(ctx context.Context, dbstring string) *Processor {
 		log.Fatal("Unable to connect to DB:", err)
 	}
 	return &Processor{
-		input:  make(chan jetstream.Msg, 50000),
+		input:  make(chan jetstream.Msg, 15000),
 		dbPool: pool,
 	}
 }
@@ -93,6 +92,7 @@ func (p *Processor) flushBatch(ctx context.Context, batch []*batchItem) {
 	}
 
 	for _, item := range batch {
+		metrics.SetReadingsGauge(item.data)
 		item.msg.Ack()
 	}
 }
@@ -118,7 +118,6 @@ func (p *Processor) workerLoop(ctx context.Context, i int) {
 
 			batch = append(batch, &batchItem{data: &reading, msg: rawMsg})
 			metrics.SensorReadings.WithLabelValues(reading.SensorZone).Inc()
-			metrics.SetReadingsGauge(&reading)
 
 			if len(batch) >= BatchSize {
 				p.flushBatch(ctx, batch)

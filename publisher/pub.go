@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	globalConfig "github.com/knightfall22/Phylax/config"
@@ -90,15 +91,14 @@ func (p *NatsPublisher) PublishAsync(subject string, payload []byte) error {
 }
 
 func (p *NatsPublisher) Consume(ctx context.Context, handler func(jetstream.Msg)) (jetstream.ConsumeContext, error) {
+	fmt.Println("HEELO")
 	config := jetstream.ConsumerConfig{
 		Name:          "PROCESSOR_WORKERS",
 		Durable:       "PROCESSOR_WORKERS",
 		AckPolicy:     jetstream.AckExplicitPolicy,
 		FilterSubject: "sensors.>",
 		AckWait:       30 * time.Second,
-		// MaxAckPending: (WorkerCount * BatchSize) * 2
-		// 16 * 1000 * 2 = 32000
-		MaxAckPending: 32000,
+		MaxAckPending: 500000,
 	}
 
 	consumer, err := p.js.CreateOrUpdateConsumer(ctx, "SENSORS_READINGS", config)

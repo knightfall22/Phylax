@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: phylax-aggregator
+  namespace: default
+spec:
+  schedule: "0 * * * *" # Runs at minute 0 of every hour
+  concurrencyPolicy: Forbid # Don't run two jobs at once if one hangs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: aggregator
+              # Use a lightweight postgres image just for the 'psql' client
+              image: postgres:16-alpine
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "Starting Hourly Aggregation..."
+                  # Connect to DB and call the procedure
+                  psql -h phylax-db-rw -U phylax_user -d sensors -c "CALL run_hourly_rollup();"
+                  echo "Aggregation Complete."
+              env:
+                # Get the password from your existing Kubernetes Secret
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: phylax-db-app
+                      key: password
+          restartPolicy: OnFailure
