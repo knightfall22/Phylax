@@ -35,9 +35,64 @@ Ensure you have the following installed:
 We first install the CloudNativePG Operator. This is a cluster-wide controller that manages our database instances. We install it separately to avoid "ownership" conflicts during redeployments.
 
 ```bash
-    # Add the repo and install the operator
-    helm repo add cnpg https://cloudnative-pg.io/charts
-    helm repo update
-    helm install cnpg cnpg/cloudnative-pg \
-    --namespace cnpg-system --create-namespace --wait
+# Add the repo and install the operator
+helm repo add cnpg https://cloudnative-pg.io/charts
+helm repo update
+helm install cnpg cnpg/cloudnative-pg \
+  --namespace cnpg-system --create-namespace --wait
+```
+
+### 3. Build & Prepare the Application
+
+```bash
+# Build the Docker image locally
+docker build -t phylax:latest .
+```
+
+### 4. Deploy the Stack
+
+We use Helm chart to deploy NATS, Prometheus, Grafana, the Database Cluster, and the Phylax Application.
+
+```bash
+# 1. Download dependencies (NATS, Prometheus) into the charts/ folder
+helm dependency build ./deploy
+
+# 2. Install the full stack
+helm install phylax ./deploy -f ./deploy/values.yaml
+```
+
+### 5. Run Simulator
+
+Since the Simulator runs locally on your machine while the NATS broker runs inside Kubernetes, you must expose the connection and update the simulator's configuration.
+
+1. Expose NATS to Localhost:
+   Open a new terminal window and create a tunnel to the NATS service:
+
+```bash
+# Forward local port 4222 to the NATS service in Kubernetes
+kubectl port-forward svc/phylax-nats 4222:4222
+```
+
+2. Update the Configuration:
+   Open simulator/simulation-config.yaml and ensure the nats_url points to your local forwarded port:
+
+```bash
+# simulator/simulation-config.yaml
+nats_url: "nats://localhost:4222"
+```
+
+3. Run Simulator:
+   Now that the everything is ready, start the simulator to flood the system with synthetic data.
+
+```bash
+# Run the simulator locally
+go run cmd/simulator/main.go
+```
+
+### 6. Access Observability (Grafana)
+
+```bash
+# 1. Port-forward Grafana to your local browser
+# (Note: Adjust the service name if yours differs, check with 'kubectl get svc')
+kubectl port-forward svc/phylax-kube-prometheus-stack-grafana 8080:80
 ```
