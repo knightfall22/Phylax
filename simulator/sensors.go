@@ -132,7 +132,11 @@ func (s *SensorState) Tick() *pb.SensorReading {
 	} else {
 		// Carbon Monoxide (Decay)
 		// Clears out slowly if fire stops
-		s.CO = math.Max(0, s.CO-1.0)
+		s.CO = s.CO * 0.95
+
+		if s.CO < 0.1 {
+			s.CO = 0
+		}
 
 		// B. Temperature (HVAC / Mean Reversion)
 		// Pull current Temp towards s.TargetTemp
