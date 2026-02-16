@@ -1,1 +1,4 @@
 .env
+
+# HELM
+./deploy/charts/*.tgz
